@@ -14,7 +14,7 @@ void print_states();
 char* file = NULL;
 
 /* Current state in execution - Or is it? */
-struct state_t *current_state;
+struct state_t *states;
 
 struct transition_func_t {
     char input;                             /* on what input to transition */
@@ -49,29 +49,29 @@ struct transition_func_t *init_transition(char input, struct state_t *next){
 }
 
 void set_transition(int q, int a, char tns) {
-    struct transition_func_t *trans = init_transition(tns, &current_state[a]);
+    struct transition_func_t *trans = init_transition(tns, &states[a]);
 
-    int trans_index = current_state[q].number_out;
+    int trans_index = states[q].number_out;
     if(trans_index == 0) {
-        current_state[q].trns = trans;
+        states[q].trns = trans;
     } else{
         struct transition_func_t *new 
-            = realloc(current_state[q].trns, ( ((current_state[q].number_out) + 1) * sizeof(struct transition_func_t)) );
+            = realloc(states[q].trns, ( ((states[q].number_out) + 1) * sizeof(struct transition_func_t)) );
         if(new == NULL || trans_index < 0) {
             printf("Error with memory allocation!");
             exit(0);
         }
 
-        current_state[q].trns = new;
-        current_state[q].trns[trans_index] = *trans;
+        states[q].trns = new;
+        states[q].trns[trans_index] = *trans;
 
         free(trans);
     }
 
-        current_state[q].number_out++;
+        states[q].number_out++;
 
-        print_states(&current_state[q], 1);
-        print_transition(current_state[q].trns, current_state[q].number_out);
+        print_states(&states[q], 1);
+        print_transition(states[q].trns, states[q].number_out);
         return;
 }
 
@@ -91,17 +91,17 @@ void print_transition(struct transition_func_t *trans, int number_of_trans) {
     }
 }
 
-void free_states() {
-    free(current_state->trns);
-    free(current_state);
+void free_states(void) {
+    free(states->trns);
+    free(states);
 }
 
 void set_state(struct state_t *state){
     /* change to transition func later*/
-    current_state = state;
+    states = state;
 }
 
-void parse_file() {
+void parse_file(void) {
     char buf[BUFSIZE];
     FILE* dfa_file = fopen(file, "r");
     char tns;
@@ -134,8 +134,11 @@ void parse_file() {
     fclose(dfa_file);
 }
 
-void display_help() {
+void display_help(void) {
     printf("HELP!");
+}
+
+void run(void) {
 }
 
 int main(int argc, char *argv[]) {
@@ -165,7 +168,7 @@ int main(int argc, char *argv[]) {
     set_state(start);
     parse_file();
     /* Compute */
-
+    run();
     /* Cleanup */
     free_states();
     return 0;
