@@ -135,8 +135,14 @@ void parse_file(void) {
 }
 
 void display_help(void) {
-    printf("HELP!");
+    printf("Deterministic Finite Automaton Simulator: \n");
+    printf("Make a file containing the states and their transition. \n");
+    printf("Example: \t 0y1 <- Defining state 0 that transitions to state 1 on char 'y'  \n \
+            \t \t 1w0 <- Defining state 1 that transitions sto state 0 on char 'w' \n \
+            And so forth.... \n ");
+    printf("Run with ./dfa -s [number of states] -f [file to read] || -h [help]\n");
 }
+  
 
 void run(void) {
 }
