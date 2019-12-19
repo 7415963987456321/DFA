@@ -86,11 +86,10 @@ void print_states(struct state_t *state, int number_of_states){
 }
 
 void print_transition(struct transition_func_t *trans, int number_of_trans) {
-	struct state_t *test = trans->next;
 	for (int i = 0; i < number_of_trans; i++) {
 		printf("On char: %c \
 				transition to: q%d \
-				\n", trans[i].input, test[i].number);
+				\n", trans[i].input, trans[i].next->number);
 	}
 }
 
