@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
 
@@ -11,10 +12,23 @@
 void print_transition();
 void print_states();
 
+/* Globals */
 char* file = NULL;
+char* input_file = NULL;
+enum running_state;
 
 /* Current state in execution - Or is it? */
 struct state_t *states;
+
+enum running_state {
+    RUNNING,
+    STOPPED,
+};
+
+enum state_type {
+    NORMAL,
+    ACCEPT,
+};
 
 struct transition_func_t {
     char input;                             /* on what input to transition */
@@ -24,6 +38,7 @@ struct transition_func_t {
 struct state_t {
     uint16_t number;                        /* number of this state */
     uint16_t number_out;                    /* number of outgoing arrows */
+    enum state_type type;
     struct transition_func_t *trns;         /* transition function */
 };
 
@@ -32,8 +47,9 @@ struct state_t *init_states(uint16_t number_of_states) {
         = malloc(sizeof(struct state_t) * number_of_states);
 
     for(int i = 0; i < number_of_states; i++) {
+        start_state[i].type = NORMAL;
         start_state[i].number = i;
-            start_state[i].number_out = 0;
+        start_state[i].number_out = 0;
     }
 
     return start_state;
@@ -92,12 +108,11 @@ void print_transition(struct transition_func_t *trans, int number_of_trans) {
 }
 
 void free_states(void) {
-    free(states->trns);
     free(states);
 }
 
 void set_state(struct state_t *state){
-    /* change to transition func later*/
+    /* Remove this? */
     states = state;
 }
 
@@ -114,15 +129,8 @@ void parse_file(void) {
     }
 
     while (fgets(buf, BUFSIZE, dfa_file) != NULL) {
-        if(buf[1] == '\0' || buf[1] == '\n'){
+        if (sscanf(buf, "%hu%c%hu", &q, &tns, &a) != 3)
             continue;
-        }
-
-        /* dumbass parser */
-        /* fix this shit */
-        q = atoi(&buf[0]);
-        tns = buf[1];
-        a = atoi(&buf[2]);
 
         set_transition(q,a,tns);
 
@@ -136,6 +144,7 @@ void parse_file(void) {
 
 void display_help(void) {
     printf("Deterministic Finite Automaton Simulator: \n");
+    printf("========================================================\n");
     printf("Make a file containing the states and their transition. \n");
     printf("Example: \t 0y1 <- Defining state 0 that transitions to state 1 on char 'y'  \n \
             \t \t 1w0 <- Defining state 1 that transitions sto state 0 on char 'w' \n \
@@ -144,15 +153,47 @@ void display_help(void) {
 }
   
 
-void run(void) {
+void run_input(void) {
+    bool running = 1;
+    char line[BUFSIZE];
+    char input_char = 'a';
+
+    struct state_t * current_state = states; 
+
+    printf("Enter input to machine:\n");
+    while(running && fgets(line, BUFSIZE, stdin) != NULL){
+        if(sscanf(line, "%c", &input_char) != 1){
+            printf("Invalid input, please try again! \n");
+            continue;
+        }
+
+        if(input_char == '\n'){
+            printf(".:End of input:.\n");
+            break;
+        }
+
+       for (int i = 0; i < current_state->number_out; i++) {
+            if(current_state->trns[i].input == input_char){
+                printf("NEXT!!\n");
+                current_state = current_state->trns[i].next;
+            }else {
+                printf(".:Invalid transition!:.\n");
+            }
+
+
+       } 
+    }
 }
 
 int main(int argc, char *argv[]) {
     char c;
-    uint16_t number_of_states = 0;
+    int number_of_states = 0;
 
     while ((c = getopt(argc, argv, "f:s:h")) != -1) {
         switch (c) {
+            case 'i':
+                input_file = optarg;
+                break;
             case 'f': 
                 file = optarg;
                 break;
@@ -173,8 +214,10 @@ int main(int argc, char *argv[]) {
     struct state_t *start = init_states(number_of_states);
     set_state(start);
     parse_file();
+
     /* Compute */
-    run();
+    run_input();
+
     /* Cleanup */
     free_states();
     return 0;
