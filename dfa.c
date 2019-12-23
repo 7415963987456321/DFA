@@ -1,4 +1,6 @@
 #define BUFSIZE 1000
+#define INPUT_ALPHABET_BUFSIZE 200
+
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,7 +9,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-
 /* Forward declaration */
 void print_transition();
 void print_states();
@@ -15,15 +16,17 @@ void print_states();
 /* Globals */
 char* file = NULL;
 char* input_file = NULL;
-enum running_state;
-
-/* Current state in execution - Or is it? */
 struct state_t *states;
 
-enum running_state {
-    RUNNING,
-    STOPPED,
-};
+struct {
+    char input_alphabet[INPUT_ALPHABET_BUFSIZE];
+    /* enum running_state; */
+    enum {
+        RUNNING,
+        STOPPED
+    } running_state;
+
+} global_state;
 
 enum state_type {
     NORMAL,
@@ -36,9 +39,9 @@ struct transition_func_t {
 };
 
 struct state_t {
-    uint16_t number;                        /* number of this state */
-    uint16_t number_out;                    /* number of outgoing arrows */
-    enum state_type type;
+    int number;                             /* number of this state */
+    int number_out;                         /* number of outgoing arrows */
+    enum state_type type;                   /* Normal or accept state */
     struct transition_func_t *trns;         /* transition function */
 };
 
@@ -107,6 +110,14 @@ void print_transition(struct transition_func_t *trans, int number_of_trans) {
     }
 }
 
+void check_state(struct state_t *current_state) {
+    if(current_state->type == ACCEPT){
+        printf("ACCEPT!\n");
+    }else {
+        printf("HALT\n");
+    }
+}
+
 void free_states(void) {
     free(states);
 }
@@ -114,6 +125,21 @@ void free_states(void) {
 void set_state(struct state_t *state){
     /* Remove this? */
     states = state;
+}
+
+void add_to_alphabet(char input) {
+    int len = strlen(global_state.input_alphabet);
+    /* for (int i = 0; i < len; i++) { */
+    /*     printf("Alphabet: %d %c \n", i, input_alphabet[i]); */
+    /* } */
+
+    for(int i = 0; i < INPUT_ALPHABET_BUFSIZE; i++){
+        if(input == global_state.input_alphabet[i]){
+            return;
+        }
+    }
+
+    global_state.input_alphabet[len] = input;
 }
 
 void parse_file(void) {
@@ -137,6 +163,8 @@ void parse_file(void) {
         printf("q: %d\n", q);
         printf("trns: %c\n" ,tns);
         printf("a: %d\n\n", a);
+
+        add_to_alphabet(tns);
     }
 
     fclose(dfa_file);
@@ -176,13 +204,11 @@ void run_input(void) {
             if(current_state->trns[i].input == input_char){
                 printf("NEXT!!\n");
                 current_state = current_state->trns[i].next;
-            }else {
-                printf(".:Invalid transition!:.\n");
+                break;
             }
-
-
        } 
     }
+    check_state(current_state);
 }
 
 int main(int argc, char *argv[]) {
