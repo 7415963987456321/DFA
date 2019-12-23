@@ -20,7 +20,6 @@ struct state_t *states;
 
 struct {
     char input_alphabet[INPUT_ALPHABET_BUFSIZE];
-    /* enum running_state; */
     enum {
         RUNNING,
         STOPPED
