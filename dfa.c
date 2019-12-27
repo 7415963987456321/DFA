@@ -66,7 +66,7 @@ struct transition_func_t *init_transition(char input, struct state_t *next){
     return new;
 }
 
-void set_transition(int q, int a, char tns) {
+void set_transition(int q, int a, char tns, bool accept) {
     struct transition_func_t *trans = init_transition(tns, &states[a]);
 
     int trans_index = states[q].number_out;
@@ -82,6 +82,7 @@ void set_transition(int q, int a, char tns) {
 
         states[q].trns = new;
         states[q].trns[trans_index] = *trans;
+        states[q].type = accept;
 
         free(trans);
     }
@@ -98,6 +99,9 @@ void print_states(struct state_t *state, int number_of_states){
         printf("State q%d \
                 number of outgoing states: %d \
                 \n", state[i].number, state[i].number_out);
+        if(state[i].type == ACCEPT){
+            printf("Is accept state\n");
+        }
     }
 }
 
@@ -113,7 +117,7 @@ void check_state(struct state_t *current_state) {
     if(current_state->type == ACCEPT){
         printf("ACCEPT!\n");
     }else {
-        printf("HALT\n");
+        printf("HALT/REJECT\n");
     }
 }
 
@@ -128,23 +132,32 @@ void set_state(struct state_t *state){
 
 void add_to_alphabet(char input) {
     int len = strlen(global_state.input_alphabet);
-    /* for (int i = 0; i < len; i++) { */
-    /*     printf("Alphabet: %d %c \n", i, input_alphabet[i]); */
-    /* } */
-
     for(int i = 0; i < INPUT_ALPHABET_BUFSIZE; i++){
         if(input == global_state.input_alphabet[i]){
             return;
         }
     }
-
     global_state.input_alphabet[len] = input;
+}
+
+bool check_alphabet(char input) {
+    int len = strlen(global_state.input_alphabet);
+    if(input == '\n'){ return true; }
+
+    for(int i = 0; i < len; i++){
+        if(input == global_state.input_alphabet[i]){
+            return true;
+        }
+    }
+    return false;
 }
 
 void parse_file(void) {
     char buf[BUFSIZE];
     FILE* dfa_file = fopen(file, "r");
     char tns;
+    char mark;
+    bool accept = false;
     uint16_t q = 0;
     uint16_t a = 0;
 
@@ -154,10 +167,16 @@ void parse_file(void) {
     }
 
     while (fgets(buf, BUFSIZE, dfa_file) != NULL) {
-        if (sscanf(buf, "%hu%c%hu", &q, &tns, &a) != 3)
+        accept = false;
+        if (sscanf(buf, "%hu%c,%c,%hu,", &q, &mark, &tns, &a) == 4){
+            if (mark == '\'') {
+                accept = true;
+            }
+        }else if (sscanf(buf, "%hu,%c,%hu,", &q, &tns, &a) != 3){
             continue;
+        }
 
-        set_transition(q,a,tns);
+        set_transition(q,a,tns,accept);
 
         printf("q: %d\n", q);
         printf("trns: %c\n" ,tns);
@@ -174,16 +193,17 @@ void display_help(void) {
     printf("========================================================\n");
     printf("Make a file containing the states and their transition. \n");
     printf("Example: \t 0y1 <- Defining state 0 that transitions to state 1 on char 'y'  \n \
-            \t \t 1w0 <- Defining state 1 that transitions sto state 0 on char 'w' \n \
-            And so forth.... \n ");
+            1w0 <- Defining state 1 that transitions to state 0 on char 'w' \n \
+            And so forth....\n ");
+    printf("Mark a state with ' to indicate an accepting state.\n");
     printf("Run with ./dfa -s [number of states] -f [file to read] || -h [help]\n");
 }
   
 
 void run_input(void) {
-    bool running = 1;
+    bool running = true;
     char line[BUFSIZE];
-    char input_char = 'a';
+    char input_char;
 
     struct state_t * current_state = states; 
 
@@ -196,13 +216,19 @@ void run_input(void) {
 
         if(input_char == '\n'){
             printf(".:End of input:.\n");
-            break;
+            running = false;
+        }
+
+        if(!check_alphabet(input_char)){
+            printf(".:Invalid input!:.\n");
+            continue;
         }
 
        for (int i = 0; i < current_state->number_out; i++) {
             if(current_state->trns[i].input == input_char){
-                printf("NEXT!!\n");
+                printf("Current state: q%d\n", current_state->number);
                 current_state = current_state->trns[i].next;
+                printf("Transition to: q%d\n", current_state->number);
                 break;
             }
        } 
