@@ -125,11 +125,6 @@ void free_states(void) {
     free(states);
 }
 
-void set_state(struct state_t *state){
-    /* Remove this? */
-    states = state;
-}
-
 void add_to_alphabet(char input) {
     int len = strlen(global_state.input_alphabet);
     for(int i = 0; i < INPUT_ALPHABET_BUFSIZE; i++){
@@ -262,8 +257,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Set up structure */
-    struct state_t *start = init_states(number_of_states);
-    set_state(start);
+    states = init_states(number_of_states);
     parse_file();
 
     /* Compute */
