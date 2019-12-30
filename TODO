@@ -1,0 +1,8 @@
+- Fix state allocation, using realloc e.t.c.
+- Make the parser not be shit
+- Fix valgrind issues
+- Create function for printing transition table?
+- Use better variable names?
+- General refactor... possible....
+- Do not hardcode buffer sizes...
+- 
