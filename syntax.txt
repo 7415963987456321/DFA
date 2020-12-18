@@ -1,0 +1,112 @@
+The following document describes the syntax used for the DFA simulator:
+
+A state and its transition:
+
+    -- [name of state],[input to transition on],[state being transitioned to];
+        each attribute is separated by a comma and each entry ends with ';'.
+
+    -- Each entry must be on its own line.
+
+    -- Invalid entries will result in the parser throwing an error and then continue
+        to consume the rest of the input.
+
+Attributes:
+    -- [Name of state]
+        This is the name of the state being defined.
+    -- [input to transition on]:
+        This is a single character that will cause the state to transition.
+    -- [state to transition to]
+        This is the name that the state will transition to on the given input.
+        The state must be defined, can be a self transition.
+
+    For all these attributes it follows that they must be non-empty and not
+    contain any of the special characters unless escaped.
+
+Accepting states:
+    An accepting state is defined by prepending a '$' character to the name.
+    example:
+    "$end,y,end;"
+    This is an accepting state that transitions to itself on input 'y'.
+
+Comments:
+    A comment is any line that begins with the '#' charater, it must be on
+    it's own line
+    "#This is a comment."
+
+Escaping characters(implement later):
+    The following characters have special meaning and must be escaped if they
+    are used in a state name:
+        '#', {comment character}.
+        ',', {separator}
+        ';', {end}
+        '$'. {accepting state}
+    If one wishes to use the following characters they must be escaped with \.
+    Like so: '\,' , '\;', '\#' e.t.c.
+
+
+Example:
+    "0,w,1;"
+    describes a state with the name '0',
+    that transition on input 'w'
+    to the state named '1'.
+
+    "$end, x, end",
+    this is an accepting state that transitions to itself on
+    input 'x'.
+
+Another example:
+    "start,x,end;"
+    In this example the states have names, and transition on character input
+    'x'.
+
+The parser is a simple parser (with lookahead?), it reads the input line by
+line and returns a transition struct to the main program. (or maybe just a
+struct containing the information necessary to create that struct).
+
+Syntax description:
+
+    Constructs:
+
+        <DEF> ::= <NAME> <SEPARATOR> <INPUT> <SEPARATOR> <TRANSITION> <END>
+            | <COMMENT>
+
+        <NAME> ::= <STRING>
+            | <ACCEPT_MARKER> <STRING>
+
+        {<NAME>, <INPUT>, <TRANSITION>} ::= <STRING>
+            | <ESCAPE_CHAR> <STRING>
+
+        <COMMENT ::=> '#' <STRING>
+            | '#'
+
+    Characters(put in enum?):
+
+        <ACCEPT_MARKER >::= '$'
+
+        <SEPARATOR>     ::= ','
+
+        <END>           ::= ';'
+
+        <ESCAPE>        ::= '\'
+
+    Other :
+        <STRING> ::= <CHAR>
+            | <STRING ><CHAR>
+
+        <CHAR >::= <ESCAPE> <CHAR>
+            | <CHAR>
+
+
+
+TODO:
+    How to handle starting state?  Special variable?
+
+
+
+
+
+
+
+
+
+
