@@ -1,15 +1,20 @@
-0,w,1
-0,x,2
-0,y2,
+0,w,1;
+0,x,2;
+0,y,2,;
 
-1,w,1
-1,x1
 
-2,w,3
+# this is a comment
 
-3,x,1
+2,w,3;
 
-4,w,4
-4,x,2
-4,y,0
-4,z,0
+3,x,1;
+
+$4, w,4;
+$4, x, 2;
+$4,y,0;
+$4,z,0;
+
+#this is also a comment
+
+one,two,1;
+one,three,1;
