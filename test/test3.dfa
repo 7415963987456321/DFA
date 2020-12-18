@@ -1,7 +1,7 @@
-0a1
+0,a,1;
 #This is a comment
-aaa
-bbb
-ccc
-1a0
-1b1
+a,a,a;
+b,b,b;
+c,c,c;
+1,a,0;
+1,b,1;
