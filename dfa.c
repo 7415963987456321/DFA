@@ -147,6 +147,7 @@ bool check_alphabet(char input) {
     return false;
 }
 
+// TODO: connect new parser
 void parse_file(void) {
     char buf[BUFSIZE];
     FILE* dfa_file = fopen(file, "r");
@@ -160,7 +161,7 @@ void parse_file(void) {
         fprintf(stderr, "%s: %s\n", file, strerror(errno));
         exit(1);
     }
-
+    
     while (fgets(buf, BUFSIZE, dfa_file) != NULL) {
         accept = false;
         if (sscanf(buf, "%hu%c,%c,%hu,", &q, &mark, &tns, &a) == 4){
