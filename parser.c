@@ -189,7 +189,6 @@ enum tokentype_t check_special_char(char c){
 
 // Remove later
 int main(int argc, char *argv[]) {
-    printf("works\n");
     char c;
 
     while ((c = getopt(argc, argv, "f:s:h")) != -1) {
