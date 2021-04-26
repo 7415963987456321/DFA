@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
             case 'i':
                 input_file = optarg;
                 break;
-            case 'f': 
+            case 'f':
                 file = optarg;
                 break;
             case 's': 
