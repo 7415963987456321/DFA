@@ -10,7 +10,6 @@
 #include "parser.h"
 
 /* Globals */
-char* file = NULL;
 int token_id = 0;
 
 // Linked list of tokens
@@ -94,15 +93,8 @@ void append_token_to_list(struct token_t *new) {
 
 // Lexer
 // Reads text and returns token structs to the list of tokens.
-void lex(void) {
+void lex(FILE* dfa_file) {
     char line[BUFSIZE];
-    FILE* dfa_file = fopen(file, "r");
-
-    if (!dfa_file) {
-        // Move this elsewhere
-        fprintf(stderr, "%s: %s\n", file, strerror(errno));
-        exit(1);
-    }
 
     // Read lines
     while (fgets(line, BUFSIZE, dfa_file) != NULL) {
@@ -167,18 +159,26 @@ enum tokentype_t check_special_char(char c){
 // Remove later
 int main(int argc, char *argv[]) {
     char c;
+    char* fs;
 
     while ((c = getopt(argc, argv, "f:s:h")) != -1) {
         switch (c) {
             case 'f':
-                file = optarg;
+                fs = optarg;
+                if(fs == NULL) { exit(0); }
                 break;
         }
     }
 
-    if(file == NULL) {
-        exit(0);
+    FILE* dfa_file = fopen(fs, "r");
+
+    if (!dfa_file) {
+        // Move this elsewhere
+        fprintf(stderr, "%s: %s\n", dfa_file, strerror(errno));
+        exit(1);
     }
-    lex();
+
+
+    lex(dfa_file);
     return 0;
 }
