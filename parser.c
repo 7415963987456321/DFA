@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
 
@@ -19,6 +18,7 @@ struct token_t *token_tail; // Keep track of tail
 /* Forward declarations */
 enum tokentype_t check_special_char(char c);
 struct token_t *init_new_token();
+void lex(FILE* dfa_file);
 
 void tokenize_line(char line[]) {
     struct token_t *new_token;
@@ -94,10 +94,11 @@ void append_token_to_list(struct token_t *new) {
 // Lexer
 // Reads text and returns token structs to the list of tokens.
 void lex(FILE* dfa_file) {
-    char line[BUFSIZE];
+    printf("æklajsdfælkajsdf\n");
+    char line[PARSER_BUFSIZE];
 
     // Read lines
-    while (fgets(line, BUFSIZE, dfa_file) != NULL) {
+    while (fgets(line, PARSER_BUFSIZE, dfa_file) != NULL) {
         /* printf("\nLine: %s",line); // debug */
         tokenize_line(line);
     }
@@ -114,18 +115,9 @@ struct token_t *init_new_token(void){
 
 void print_token(struct token_t *token){
     if(token->type == WHITESPACE) return;
-    const char s[][16] = {
-        "WHITESPACE",
-        "NAME",
-        "END",
-        "SEPARATOR",
-        "COMMENT_MARKER",
-        "ACCEPT_MARKER",
-        "ESCAPE",
-    };
     printf("TOKEN:----------\n");
     printf("ID:     %d \n", token->ID);
-    printf("TYPE::  %s \n", s[token->type]);
+    printf("TYPE::  %s \n", token_names[token->type]);
     printf("STRING: %s \n", token->token_string);
     printf("----------\n");
 }
@@ -156,29 +148,7 @@ enum tokentype_t check_special_char(char c){
     }
 }
 
-// Remove later
-int main(int argc, char *argv[]) {
-    char c;
-    char* fs;
-
-    while ((c = getopt(argc, argv, "f:s:h")) != -1) {
-        switch (c) {
-            case 'f':
-                fs = optarg;
-                if(fs == NULL) { exit(0); }
-                break;
-        }
-    }
-
-    FILE* dfa_file = fopen(fs, "r");
-
-    if (!dfa_file) {
-        // Move this elsewhere
-        fprintf(stderr, "%s: %s\n", dfa_file, strerror(errno));
-        exit(1);
-    }
-
-
+// Parse and return states?
+void parse(FILE* dfa_file) {
     lex(dfa_file);
-    return 0;
 }
