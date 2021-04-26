@@ -102,8 +102,6 @@ void print_token_list(void) {
 }
 
 void append_token_to_list(struct token_t *new) {
-    /* struct token_t *head = root; */
-
     print_token(new);
     if(head == NULL){
         printf("ALLOCDEBUG\n");
