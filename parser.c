@@ -7,9 +7,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-/* Constants */
-#define BUFSIZE 256
-#define MAX_NAME_LENGTH 64
+#include "parser.h"
 
 /* Globals */
 char* file = NULL;
@@ -20,27 +18,6 @@ struct token_t *head;
 /* Forward declarations */
 enum tokentype_t check_special_char(char c);
 struct token_t *init_new_token();
-
-void print_token(struct token_t *token);
-void print_token_list(void);
-void append_token_to_list(struct token_t *new);
-
-enum tokentype_t{
-    WHITESPACE,
-    NAME,           // Some string
-    END,            // ';'
-    SEPARATOR,      // ','
-    COMMENT_MARKER, // '#'
-    ACCEPT_MARKER,  // '$'
-    ESCAPE,         // '\'
-};
-
-struct token_t {
-    int ID;
-    enum tokentype_t type;
-    char token_string[MAX_NAME_LENGTH];
-    struct token_t *next;   // Linked list of tokens
-};
 
 void tokenize_line(char line[]) {
     struct token_t *new_token;
@@ -86,10 +63,9 @@ void tokenize_line(char line[]) {
         token_id++;
         append_token_to_list(new_token);
     }
-
-    print_token_list();
-    return;
 }
+
+
 
 void print_token_list(void) {
     struct token_t *curr = head;
@@ -102,9 +78,7 @@ void print_token_list(void) {
 }
 
 void append_token_to_list(struct token_t *new) {
-    print_token(new);
     if(head == NULL){
-        printf("ALLOCDEBUG\n");
         head = new;
         tail = head;
         return;
@@ -130,10 +104,13 @@ void lex(void) {
 
     // Read lines
     while (fgets(line, BUFSIZE, dfa_file) != NULL) {
-        printf("\nLine: %s",line); // debug
+        /* printf("\nLine: %s",line); // debug */
         tokenize_line(line);
     }
     fclose(dfa_file);
+
+    /* Debug */
+    print_token_list();
 }
 
 struct token_t *init_new_token(void){

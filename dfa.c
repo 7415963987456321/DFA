@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include "parser.h"
+
 /* Forward declaration */
 void print_transition();
 void print_states();
