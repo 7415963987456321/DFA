@@ -1,4 +1,4 @@
-#define BUFSIZE 1000
+#define DFA_BUFSIZE 1000
 #define INPUT_ALPHABET_BUFSIZE 200
 
 #include <getopt.h>
@@ -16,7 +16,7 @@ void print_transition();
 void print_states();
 
 /* Globals */
-char* file = NULL;
+/* char* file = NULL; */
 char* input_file = NULL;
 struct state_t *states;
 
@@ -47,7 +47,7 @@ struct state_t {
 };
 
 struct state_t *init_states(uint16_t number_of_states) {
-    struct state_t *start_state 
+    struct state_t *start_state
         = malloc(sizeof(struct state_t) * number_of_states);
 
     for(int i = 0; i < number_of_states; i++) {
@@ -62,7 +62,7 @@ struct state_t *init_states(uint16_t number_of_states) {
 struct transition_func_t *init_transition(char input, struct state_t *next){
     struct transition_func_t *new
         = malloc(sizeof(struct transition_func_t));
-    
+
     new->input = input;
     new->next = next;
     return new;
@@ -75,7 +75,7 @@ void set_transition(int q, int a, char tns, bool accept) {
     if(trans_index == 0) {
         states[q].trns = trans;
     } else{
-        struct transition_func_t *new 
+        struct transition_func_t *new
             = realloc(states[q].trns, ( ((states[q].number_out) + 1) * sizeof(struct transition_func_t)) );
         if(new == NULL || trans_index < 0) {
             printf("Error with memory allocation!");
@@ -150,40 +150,50 @@ bool check_alphabet(char input) {
 }
 
 // TODO: connect new parser
-void parse_file(void) {
-    char buf[BUFSIZE];
-    FILE* dfa_file = fopen(file, "r");
-    char tns;
-    char mark;
-    bool accept = false;
-    uint16_t q = 0;
-    uint16_t a = 0;
+/* void parse_file(void) { */
+/*     char buf[DFA_BUFSIZE]; */
+/*     FILE* dfa_file = fopen(file, "r"); */
+/*     char tns; */
+/*     char mark; */
+/*     bool accept = false; */
+/*     uint16_t q = 0; */
+/*     uint16_t a = 0; */
 
+/*     if (!dfa_file) { */
+/*         fprintf(stderr, "%s: %s\n", file, strerror(errno)); */
+/*         exit(1); */
+/*     } */
+
+/*     while (fgets(buf, DFA_BUFSIZE, dfa_file) != NULL) { */
+/*         accept = false; */
+/*         if (sscanf(buf, "%hu%c,%c,%hu,", &q, &mark, &tns, &a) == 4){ */
+/*             if (mark == '\'') { */
+/*                 accept = true; */
+/*             } */
+/*         }else if (sscanf(buf, "%hu,%c,%hu,", &q, &tns, &a) != 3){ */
+/*             continue; */
+/*         } */
+
+/*         set_transition(q,a,tns,accept); */
+
+/*         printf("q: %d\n", q); */
+/*         printf("trns: %c\n" ,tns); */
+/*         printf("a: %d\n\n", a); */
+
+/*         add_to_alphabet(tns); */
+/*     } */
+
+/*     fclose(dfa_file); */
+/* } */
+
+FILE* read_file(char *fs){
+    FILE* dfa_file = fopen(fs, "r");
     if (!dfa_file) {
-        fprintf(stderr, "%s: %s\n", file, strerror(errno));
+        fprintf(stderr, "%s: %s\n", fs, strerror(errno));
         exit(1);
     }
-    
-    while (fgets(buf, BUFSIZE, dfa_file) != NULL) {
-        accept = false;
-        if (sscanf(buf, "%hu%c,%c,%hu,", &q, &mark, &tns, &a) == 4){
-            if (mark == '\'') {
-                accept = true;
-            }
-        }else if (sscanf(buf, "%hu,%c,%hu,", &q, &tns, &a) != 3){
-            continue;
-        }
 
-        set_transition(q,a,tns,accept);
-
-        printf("q: %d\n", q);
-        printf("trns: %c\n" ,tns);
-        printf("a: %d\n\n", a);
-
-        add_to_alphabet(tns);
-    }
-
-    fclose(dfa_file);
+    return dfa_file;
 }
 
 void display_help(void) {
@@ -196,17 +206,17 @@ void display_help(void) {
     printf("Mark a state with ' to indicate an accepting state.\n");
     printf("Run with ./dfa -s [number of states] -f [file to read] || -h [help]\n");
 }
-  
+
 
 void run_input(void) {
     bool running = true;
-    char line[BUFSIZE];
+    char line[DFA_BUFSIZE];
     char input_char;
 
-    struct state_t * current_state = states; 
+    struct state_t * current_state = states;
 
     printf("Enter input to machine:\n");
-    while(running && fgets(line, BUFSIZE, stdin) != NULL){
+    while(running && fgets(line, DFA_BUFSIZE, stdin) != NULL){
         if(sscanf(line, "%c", &input_char) != 1){
             printf("Invalid input, please try again! \n");
             continue;
@@ -229,13 +239,14 @@ void run_input(void) {
                 printf("Transition to: q%d\n", current_state->number);
                 break;
             }
-       } 
+       }
     }
     check_state(current_state);
 }
 
 int main(int argc, char *argv[]) {
     char c;
+    char *fs;
     int number_of_states = 0;
 
     while ((c = getopt(argc, argv, "f:s:h")) != -1) {
@@ -244,9 +255,9 @@ int main(int argc, char *argv[]) {
                 input_file = optarg;
                 break;
             case 'f':
-                file = optarg;
+                fs = optarg;
                 break;
-            case 's': 
+            case 's':
                 number_of_states = atoi(optarg);
                 break;
             case 'h':
@@ -255,13 +266,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if(number_of_states == 0 || file == NULL) {
-        exit(0);
-    }
+    parse(read_file(fs));
+
+    exit(0); // debug
+
 
     /* Set up structure */
     states = init_states(number_of_states);
-    parse_file();
+    /* parse_file(); */
 
     /* Compute */
     run_input();
