@@ -12,8 +12,10 @@
 /* Globals */
 char* file = NULL;
 int token_id = 0;
-struct token_t *tail; // Keep track of tail
-struct token_t *head;
+
+// Linked list of tokens
+struct token_t *token_head;
+struct token_t *token_tail; // Keep track of tail
 
 /* Forward declarations */
 enum tokentype_t check_special_char(char c);
@@ -68,7 +70,7 @@ void tokenize_line(char line[]) {
 
 
 void print_token_list(void) {
-    struct token_t *curr = head;
+    struct token_t *curr = token_head;
 
     for (int i = 0; curr != NULL; i++) {
         print_token(curr);
@@ -78,16 +80,16 @@ void print_token_list(void) {
 }
 
 void append_token_to_list(struct token_t *new) {
-    if(head == NULL){
-        head = new;
-        tail = head;
+    if(token_head == NULL){
+        token_head = new;
+        token_tail = token_head;
         return;
     }
 
     // Append new
-    tail->next = new;
+    token_tail->next = new;
     // Keep track of tail
-    tail = tail->next;
+    token_tail = token_tail->next;
 }
 
 // Lexer
