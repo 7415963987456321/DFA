@@ -14,11 +14,16 @@
 /* Globals */
 char* file = NULL;
 int token_id = 0;
+struct token_t *tail; // Keep track of tail
+struct token_t *head;
 
 /* Forward declarations */
 enum tokentype_t check_special_char(char c);
 struct token_t *init_new_token();
+
 void print_token(struct token_t *token);
+void print_token_list(void);
+void append_token_to_list(struct token_t *new);
 
 enum tokentype_t{
     WHITESPACE,
@@ -35,52 +40,82 @@ struct token_t {
     enum tokentype_t type;
     char token_string[MAX_NAME_LENGTH];
     struct token_t *next;   // Linked list of tokens
-} root;
+};
 
-struct token_t *tokenize_line(char line[]) {
-    struct token_t *prev;
-    struct token_t *new_token = init_new_token();
+void tokenize_line(char line[]) {
+    struct token_t *new_token;
     enum tokentype_t tt;
     int l = 0;
 
     // Read chars
     for(int i = 0; line[i] != '\0'; i++) {
         tt = check_special_char(line[i]);
-        new_token->ID = token_id;
-        new_token->type = tt;
+        new_token = init_new_token();
 
         switch (tt) {
             case WHITESPACE:
                 break;
 
             case COMMENT_MARKER:
-                strncpy(new_token->token_string, &line[i], 1);
-                token_id++;
-                return new_token; //return?
+                return; //return?
 
             /* fallthrough */
             case ACCEPT_MARKER:
             case SEPARATOR:
             case END:
             case ESCAPE:
+                new_token->ID = token_id;
+                new_token->type = tt;
                 strncpy(new_token->token_string, &line[i], 1);
                 break;
 
             case NAME:
+                new_token->ID = token_id;
+                new_token->type = tt;
                 for(l = i; check_special_char(line[l]) == NAME; l++ ){
                     /* printf("name: %c\n", line[l]); */
                     strncat(new_token->token_string, &line[l], 1);
                 }
                 i = --l;
                 break;
+
+            default:
+                break;
         }
 
         token_id++;
-        prev = new_token;
-        print_token(new_token);
-        new_token = init_new_token();
+        append_token_to_list(new_token);
     }
-    return new_token;
+
+    print_token_list();
+    return;
+}
+
+void print_token_list(void) {
+    struct token_t *curr = head;
+
+    for (int i = 0; curr != NULL; i++) {
+        print_token(curr);
+        curr = curr->next;
+    }
+    free(curr);
+}
+
+void append_token_to_list(struct token_t *new) {
+    /* struct token_t *head = root; */
+
+    print_token(new);
+    if(head == NULL){
+        printf("ALLOCDEBUG\n");
+        head = new;
+        tail = head;
+        return;
+    }
+
+    // Append new
+    tail->next = new;
+    // Keep track of tail
+    tail = tail->next;
 }
 
 // Lexer
@@ -100,18 +135,16 @@ void lex(void) {
     // Read lines
     while (fgets(line, BUFSIZE, dfa_file) != NULL) {
         printf("\nLine: %s",line); // debug
-        new_token = *tokenize_line(line);
-        /* print_token(&new_token); */
+        tokenize_line(line);
     }
     fclose(dfa_file);
 }
 
-struct token_t *init_new_token(){
+struct token_t *init_new_token(void){
     struct token_t *new_token = malloc(sizeof(struct token_t));
     return new_token;
 }
 
-#ifdef DEBUG
 void print_token(struct token_t *token){
     if(token->type == WHITESPACE) return;
     const char s[][16] = {
@@ -129,7 +162,6 @@ void print_token(struct token_t *token){
     printf("STRING: %s \n", token->token_string);
     printf("----------\n");
 }
-#endif
 
 
 enum tokentype_t check_special_char(char c){
