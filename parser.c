@@ -123,8 +123,6 @@ void append_token_to_list(struct token_t *new) {
 void lex(void) {
     char line[BUFSIZE];
     FILE* dfa_file = fopen(file, "r");
-    enum tokentype_t tt;
-    struct token_t new_token;
 
     if (!dfa_file) {
         // Move this elsewhere
