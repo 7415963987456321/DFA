@@ -71,7 +71,7 @@ void tokenize_line(char line[]) {
 void print_token_list(void) {
     struct token_t *curr = token_head;
 
-    for (int i = 0; curr != NULL; i++) {
+    while (curr != NULL) {
         print_token(curr);
         curr = curr->next;
     }
